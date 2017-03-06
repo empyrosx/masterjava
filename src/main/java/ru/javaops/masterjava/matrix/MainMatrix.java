@@ -10,18 +10,18 @@ import java.util.concurrent.Executors;
  */
 public class MainMatrix {
     private static final int MATRIX_SIZE = 1000;
-    private static final int THREAD_NUMBER = 10;
+    private static final int THREAD_NUMBER = 8;
 
     private final static ExecutorService executor = Executors.newFixedThreadPool(MainMatrix.THREAD_NUMBER);
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        final int[][] matrixA = MatrixUtil.create(MATRIX_SIZE);
-        final int[][] matrixB = MatrixUtil.create(MATRIX_SIZE);
-
         double singleThreadSum = 0.;
         double concurrentThreadSum = 0.;
         int count = 1;
         while (count < 6) {
+            final int[][] matrixA = MatrixUtil.create(MATRIX_SIZE);
+            final int[][] matrixB = MatrixUtil.create(MATRIX_SIZE);
+
             System.out.println("Pass " + count);
             long start = System.currentTimeMillis();
             final int[][] matrixC = MatrixUtil.singleThreadMultiply(matrixA, matrixB);
@@ -37,7 +37,7 @@ public class MainMatrix {
 
             if (!MatrixUtil.compare(matrixC, concurrentMatrixC)) {
                 System.err.println("Comparison failed");
-                break;
+                //break;
             }
             count++;
         }
