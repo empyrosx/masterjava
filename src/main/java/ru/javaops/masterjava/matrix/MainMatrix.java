@@ -24,13 +24,13 @@ public class MainMatrix {
         while (count < 6) {
             System.out.println("Pass " + count);
             long start = System.currentTimeMillis();
-            final int[][] matrixC = MatrixUtil.singleThreadMultiply(matrixA, matrixB);
+            final int[][] matrixC = MatrixUtil.singleThreadMultiplyOpt(matrixA, matrixB);
             double duration = (System.currentTimeMillis() - start) / 1000.;
             out("Single thread time, sec: %.3f", duration);
             singleThreadSum += duration;
 
             start = System.currentTimeMillis();
-            final int[][] concurrentMatrixC = MatrixUtil.concurrentMultiply(matrixA, matrixB, executor);
+            final int[][] concurrentMatrixC = MatrixUtil.concurrentMultiply2(matrixA, matrixB, executor);
             duration = (System.currentTimeMillis() - start) / 1000.;
             out("Concurrent thread time, sec: %.3f", duration);
             concurrentThreadSum += duration;
