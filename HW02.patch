@@ -1,0 +1,764 @@
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ pom.xml	(revision )
+@@ -94,6 +94,11 @@
+             <version>21.0</version>
+         </dependency>
+         <dependency>
++            <groupId>com.j2html</groupId>
++            <artifactId>j2html</artifactId>
++            <version>RELEASE</version>
++        </dependency>
++        <dependency>
+             <groupId>junit</groupId>
+             <artifactId>junit</artifactId>
+             <version>4.12</version>
+Index: src/test/resources/users.xslt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/resources/users.xslt	(revision )
++++ src/test/resources/users.xslt	(revision )
+@@ -0,0 +1,27 @@
++<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
++    <xsl:output method="html" indent="yes"/>
++    <xsl:strip-space elements="*"/>
++    <xsl:template match="/">
++
++        <html>
++            <body>
++                <xsl:param name="projectName" />
++                <h1><xsl:value-of select="$projectName"/></h1>
++                <table border="1">
++                    <tr bgcolor="#9acd32">
++                        <th style="text-align:left">Full name</th>
++                        <th style="text-align:left">Email</th>
++                    </tr>
++                    <xsl:for-each select="/*[name()='Payload']/*[name()='Users']/*[name()='User']">
++                        <tr>
++                            <td><xsl:value-of select="."/></td>
++                            <td><xsl:value-of select="@email"/></td>
++                        </tr>
++                    </xsl:for-each>
++                </table>
++            </body>
++        </html>
++
++    </xsl:template>
++    <xsl:template match="text()"/>
++</xsl:stylesheet>
+\ No newline at end of file
+Index: src/main/java/ru/javaops/masterjava/xml/schema/Payload.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javaops/masterjava/xml/schema/Payload.java	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ src/main/java/ru/javaops/masterjava/xml/schema/Payload.java	(revision )
+@@ -19,7 +19,18 @@
+  * &lt;complexType>
+  *   &lt;complexContent>
+  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+- *       &lt;all>
++ *       &lt;sequence>
++ *         &lt;element name="Projects">
++ *           &lt;complexType>
++ *             &lt;complexContent>
++ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
++ *                 &lt;sequence maxOccurs="unbounded" minOccurs="0">
++ *                   &lt;element ref="{http://javaops.ru}Project"/>
++ *                 &lt;/sequence>
++ *               &lt;/restriction>
++ *             &lt;/complexContent>
++ *           &lt;/complexType>
++ *         &lt;/element>
+  *         &lt;element name="Cities">
+  *           &lt;complexType>
+  *             &lt;complexContent>
+@@ -42,7 +53,7 @@
+  *             &lt;/complexContent>
+  *           &lt;/complexType>
+  *         &lt;/element>
+- *       &lt;/all>
++ *       &lt;/sequence>
+  *     &lt;/restriction>
+  *   &lt;/complexContent>
+  * &lt;/complexType>
+@@ -52,17 +63,45 @@
+  */
+ @XmlAccessorType(XmlAccessType.FIELD)
+ @XmlType(name = "", propOrder = {
+-
++    "projects",
++    "cities",
++    "users"
+ })
+ @XmlRootElement(name = "Payload", namespace = "http://javaops.ru")
+ public class Payload {
+ 
++    @XmlElement(name = "Projects", namespace = "http://javaops.ru", required = true)
++    protected Payload.Projects projects;
+     @XmlElement(name = "Cities", namespace = "http://javaops.ru", required = true)
+     protected Payload.Cities cities;
+     @XmlElement(name = "Users", namespace = "http://javaops.ru", required = true)
+     protected Payload.Users users;
+ 
+     /**
++     * Gets the value of the projects property.
++     * 
++     * @return
++     *     possible object is
++     *     {@link Payload.Projects }
++     *     
++     */
++    public Payload.Projects getProjects() {
++        return projects;
++    }
++
++    /**
++     * Sets the value of the projects property.
++     * 
++     * @param value
++     *     allowed object is
++     *     {@link Payload.Projects }
++     *     
++     */
++    public void setProjects(Payload.Projects value) {
++        this.projects = value;
++    }
++
++    /**
+      * Gets the value of the cities property.
+      * 
+      * @return
+@@ -166,6 +205,66 @@
+                 city = new ArrayList<CityType>();
+             }
+             return this.city;
++        }
++
++    }
++
++
++    /**
++     * <p>Java class for anonymous complex type.
++     * 
++     * <p>The following schema fragment specifies the expected content contained within this class.
++     * 
++     * <pre>
++     * &lt;complexType>
++     *   &lt;complexContent>
++     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
++     *       &lt;sequence maxOccurs="unbounded" minOccurs="0">
++     *         &lt;element ref="{http://javaops.ru}Project"/>
++     *       &lt;/sequence>
++     *     &lt;/restriction>
++     *   &lt;/complexContent>
++     * &lt;/complexType>
++     * </pre>
++     * 
++     * 
++     */
++    @XmlAccessorType(XmlAccessType.FIELD)
++    @XmlType(name = "", propOrder = {
++        "project"
++    })
++    public static class Projects {
++
++        @XmlElement(name = "Project", namespace = "http://javaops.ru")
++        protected List<Project> project;
++
++        /**
++         * Gets the value of the project property.
++         * 
++         * <p>
++         * This accessor method returns a reference to the live list,
++         * not a snapshot. Therefore any modification you make to the
++         * returned list will be present inside the JAXB object.
++         * This is why there is not a <CODE>set</CODE> method for the project property.
++         * 
++         * <p>
++         * For example, to add a new item, do as follows:
++         * <pre>
++         *    getProject().add(newItem);
++         * </pre>
++         * 
++         * 
++         * <p>
++         * Objects of the following type(s) are allowed in the list
++         * {@link Project }
++         * 
++         * 
++         */
++        public List<Project> getProject() {
++            if (project == null) {
++                project = new ArrayList<Project>();
++            }
++            return this.project;
+         }
+ 
+     }
+Index: src/main/resources/payload.xsd
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/payload.xsd	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ src/main/resources/payload.xsd	(revision )
+@@ -6,7 +6,15 @@
+ 
+     <xs:element name="Payload">
+         <xs:complexType>
+-            <xs:all>
++            <xs:sequence>
++                <xs:element name="Projects">
++                    <xs:complexType>
++                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
++                            <xs:element ref="Project"/>
++                        </xs:sequence>
++                    </xs:complexType>
++                </xs:element>
++
+                 <xs:element name="Cities">
+                     <xs:complexType>
+                         <xs:sequence minOccurs="1" maxOccurs="unbounded">
+@@ -14,6 +22,7 @@
+                         </xs:sequence>
+                     </xs:complexType>
+                 </xs:element>
++
+                 <xs:element name="Users">
+                     <xs:complexType>
+                         <xs:sequence minOccurs="0" maxOccurs="unbounded">
+@@ -21,18 +30,51 @@
+                         </xs:sequence>
+                     </xs:complexType>
+                 </xs:element>
+-            </xs:all>
++            </xs:sequence>
+         </xs:complexType>
+     </xs:element>
+ 
+-    <xs:element name="User">
++    <xs:element name="Project">
+         <xs:complexType>
+             <xs:sequence>
+-                <xs:element type="xs:string" name="email"/>
+-                <xs:element type="xs:string" name="fullName"/>
++                <xs:element name="Groups">
++                    <xs:complexType>
++                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
++                            <xs:element ref="Group"/>
+-            </xs:sequence>
++                        </xs:sequence>
++                    </xs:complexType>
++                </xs:element>
++            </xs:sequence>
++            <xs:attribute type="xs:string" name="name" use="required"/>
++            <xs:attribute type="xs:string" name="description" use="required"/>
++        </xs:complexType>
++    </xs:element>
++
++    <xs:element name="Group">
++        <xs:complexType>
++            <xs:attribute type="xs:ID" name="name" use="required"/>
++            <xs:attribute type="groupType" name="type" use="required"/>
++        </xs:complexType>
++    </xs:element>
++
++    <xs:simpleType name="groupType">
++        <xs:restriction base="xs:string">
++            <xs:enumeration value="REGISTERING"/>
++            <xs:enumeration value="CURRENT"/>
++            <xs:enumeration value="FINISHED"/>
++        </xs:restriction>
++    </xs:simpleType>
++
++    <xs:element name="User">
++        <xs:complexType>
++            <xs:simpleContent>
++                <xs:extension base="xs:string">
++                    <xs:attribute type="xs:string" name="email"/>
+-            <xs:attribute type="flagType" name="flag" use="required"/>
+-            <xs:attribute type="xs:IDREF" name="city" use="required"/>
++                    <xs:attribute type="flagType" name="flag" use="required"/>
++                    <xs:attribute type="xs:IDREF" name="city" use="required"/>
++                    <xs:attribute type="xs:IDREFS" name="groupRefs" use="optional"/>
++                </xs:extension>
++            </xs:simpleContent>
+         </xs:complexType>
+     </xs:element>
+ 
+@@ -53,4 +95,5 @@
+             </xs:extension>
+         </xs:simpleContent>
+     </xs:complexType>
++
+ </xs:schema>
+\ No newline at end of file
+Index: src/main/java/ru/javaops/masterjava/xml/schema/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javaops/masterjava/xml/schema/User.java	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ src/main/java/ru/javaops/masterjava/xml/schema/User.java	(revision )
+@@ -1,14 +1,16 @@
+ 
+ package ru.javaops.masterjava.xml.schema;
+ 
++import java.util.ArrayList;
++import java.util.List;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
+-import javax.xml.bind.annotation.XmlElement;
+ import javax.xml.bind.annotation.XmlIDREF;
+ import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlSchemaType;
+ import javax.xml.bind.annotation.XmlType;
++import javax.xml.bind.annotation.XmlValue;
+ 
+ 
+ /**
+@@ -18,16 +20,14 @@
+  * 
+  * <pre>
+  * &lt;complexType>
+- *   &lt;complexContent>
+- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+- *       &lt;sequence>
+- *         &lt;element name="email" type="{http://www.w3.org/2001/XMLSchema}string"/>
+- *         &lt;element name="fullName" type="{http://www.w3.org/2001/XMLSchema}string"/>
+- *       &lt;/sequence>
++ *   &lt;simpleContent>
++ *     &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
++ *       &lt;attribute name="email" type="{http://www.w3.org/2001/XMLSchema}string" />
+  *       &lt;attribute name="flag" use="required" type="{http://javaops.ru}flagType" />
+  *       &lt;attribute name="city" use="required" type="{http://www.w3.org/2001/XMLSchema}IDREF" />
+- *     &lt;/restriction>
+- *   &lt;/complexContent>
++ *       &lt;attribute name="groupRefs" type="{http://www.w3.org/2001/XMLSchema}IDREFS" />
++ *     &lt;/extension>
++ *   &lt;/simpleContent>
+  * &lt;/complexType>
+  * </pre>
+  * 
+@@ -35,69 +35,72 @@
+  */
+ @XmlAccessorType(XmlAccessType.FIELD)
+ @XmlType(name = "", propOrder = {
+-    "email",
+-    "fullName"
++    "value"
+ })
+ @XmlRootElement(name = "User", namespace = "http://javaops.ru")
+ public class User {
+ 
+-    @XmlElement(namespace = "http://javaops.ru", required = true)
++    @XmlValue
++    protected String value;
++    @XmlAttribute(name = "email")
+     protected String email;
+-    @XmlElement(namespace = "http://javaops.ru", required = true)
+-    protected String fullName;
+     @XmlAttribute(name = "flag", required = true)
+     protected FlagType flag;
+     @XmlAttribute(name = "city", required = true)
+     @XmlIDREF
+     @XmlSchemaType(name = "IDREF")
+     protected Object city;
++    @XmlAttribute(name = "groupRefs")
++    @XmlIDREF
++    @XmlSchemaType(name = "IDREFS")
++    protected List<Object> groupRefs;
+ 
+     /**
+-     * Gets the value of the email property.
++     * Gets the value of the value property.
+      * 
+      * @return
+      *     possible object is
+      *     {@link String }
+      *     
+      */
+-    public String getEmail() {
+-        return email;
++    public String getValue() {
++        return value;
+     }
+ 
+     /**
+-     * Sets the value of the email property.
++     * Sets the value of the value property.
+      * 
+      * @param value
+      *     allowed object is
+      *     {@link String }
+      *     
+      */
+-    public void setEmail(String value) {
+-        this.email = value;
++    public void setValue(String value) {
++        this.value = value;
+     }
+ 
+     /**
+-     * Gets the value of the fullName property.
++     * Gets the value of the email property.
+      * 
+      * @return
+      *     possible object is
+      *     {@link String }
+      *     
+      */
+-    public String getFullName() {
+-        return fullName;
++    public String getEmail() {
++        return email;
+     }
+ 
+     /**
+-     * Sets the value of the fullName property.
++     * Sets the value of the email property.
+      * 
+      * @param value
+      *     allowed object is
+      *     {@link String }
+      *     
+      */
+-    public void setFullName(String value) {
+-        this.fullName = value;
++    public void setEmail(String value) {
++        this.email = value;
+     }
+ 
+     /**
+@@ -146,6 +149,35 @@
+      */
+     public void setCity(Object value) {
+         this.city = value;
++    }
++
++    /**
++     * Gets the value of the groupRefs property.
++     * 
++     * <p>
++     * This accessor method returns a reference to the live list,
++     * not a snapshot. Therefore any modification you make to the
++     * returned list will be present inside the JAXB object.
++     * This is why there is not a <CODE>set</CODE> method for the groupRefs property.
++     * 
++     * <p>
++     * For example, to add a new item, do as follows:
++     * <pre>
++     *    getGroupRefs().add(newItem);
++     * </pre>
++     * 
++     * 
++     * <p>
++     * Objects of the following type(s) are allowed in the list
++     * {@link Object }
++     * 
++     * 
++     */
++    public List<Object> getGroupRefs() {
++        if (groupRefs == null) {
++            groupRefs = new ArrayList<Object>();
++        }
++        return this.groupRefs;
+     }
+ 
+ }
+Index: src/test/resources/payload.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/resources/payload.xml	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ src/test/resources/payload.xml	(revision )
+@@ -1,23 +1,30 @@
+ <Payload xmlns="http://javaops.ru"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://javaops.ru payload.xsd">
+-    <Users>
+-        <User flag="active" city="kiv">
+-            <email>gmail@gmail.com</email>
+-            <fullName>Full Name</fullName>
+-        </User>
+-        <User flag="superuser" city="spb">
+-            <email>admin@javaops.ru</email>
+-            <fullName>Admin</fullName>
+-        </User>
+-        <User flag="deleted" city="spb">
+-            <email>mail@yandex.ru</email>
+-            <fullName>Deleted</fullName>
+-        </User>
+-    </Users>
++    <Projects>
++        <Project name="TopJava" description="TopJava projects">
++            <Groups>
++                <Group name="TopJava01" type="FINISHED"/>
++                <Group name="TopJava02" type="FINISHED"/>
++            </Groups>
++        </Project>
++        <Project name="MasterJava" description="MasterJava projects">
++            <Groups>
++                <Group name="MasterJava01" type="FINISHED"/>
++                <Group name="MasterJava02" type="CURRENT"/>
++            </Groups>
++        </Project>
++    </Projects>
++
+     <Cities>
+         <City id="spb">Санкт-Петербург</City>
+         <City id="kiv">Киев</City>
+         <City id="mnsk">Минск</City>
+     </Cities>
++
++    <Users>
++        <User flag="active" city="kiv" email="gmail@gmail.com" groupRefs="TopJava01 TopJava02">Full Name</User>
++        <User flag="superuser" city="spb" email="admin@javaops.ru" groupRefs="TopJava02">Admin</User>
++        <User flag="deleted" city="spb" email="mail@yandex.ru">Deleted</User>
++    </Users>
+ </Payload>
+\ No newline at end of file
+Index: src/main/java/ru/javaops/masterjava/xml/schema/ObjectFactory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/javaops/masterjava/xml/schema/ObjectFactory.java	(revision d758fadbe87949b89dc5095df15f41fbb64a0d4c)
++++ src/main/java/ru/javaops/masterjava/xml/schema/ObjectFactory.java	(revision )
+@@ -34,6 +34,14 @@
+     }
+ 
+     /**
++     * Create an instance of {@link Project }
++     * 
++     */
++    public Project createProject() {
++        return new Project();
++    }
++
++    /**
+      * Create an instance of {@link Payload }
+      * 
+      */
+@@ -42,11 +50,35 @@
+     }
+ 
+     /**
++     * Create an instance of {@link Project.Groups }
++     * 
++     */
++    public Project.Groups createProjectGroups() {
++        return new Project.Groups();
++    }
++
++    /**
++     * Create an instance of {@link Group }
++     * 
++     */
++    public Group createGroup() {
++        return new Group();
++    }
++
++    /**
+      * Create an instance of {@link User }
+      * 
+      */
+     public User createUser() {
+         return new User();
++    }
++
++    /**
++     * Create an instance of {@link Payload.Projects }
++     * 
++     */
++    public Payload.Projects createPayloadProjects() {
++        return new Payload.Projects();
+     }
+ 
+     /**
+Index: src/test/java/ru/javaops/masterjava/xml/util/MainXml.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/ru/javaops/masterjava/xml/util/MainXml.java	(revision )
++++ src/test/java/ru/javaops/masterjava/xml/util/MainXml.java	(revision )
+@@ -0,0 +1,168 @@
++package ru.javaops.masterjava.xml.util;
++
++import com.google.common.io.Resources;
++import ru.javaops.masterjava.xml.schema.*;
++
++import javax.xml.bind.JAXBException;
++import javax.xml.stream.XMLStreamException;
++import javax.xml.stream.XMLStreamReader;
++import javax.xml.stream.events.XMLEvent;
++import javax.xml.transform.Source;
++import javax.xml.transform.Transformer;
++import javax.xml.transform.TransformerException;
++import javax.xml.transform.TransformerFactory;
++import javax.xml.transform.stream.StreamResult;
++import javax.xml.transform.stream.StreamSource;
++import java.io.*;
++import java.net.URL;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.*;
++import java.util.stream.Collectors;
++
++import static j2html.TagCreator.*;
++import static java.util.stream.Collectors.toSet;
++
++public class MainXml {
++
++    private static final Comparator<User> USER_COMPARATOR = Comparator.comparing(User::getValue).thenComparing(User::getEmail);
++
++    public static void main(String[] args) throws Exception {
++        if (args.length == 0) {
++            throw new IllegalAccessException("Expected ProjectName");
++        }
++        String projectName = args[0];
++        URL payloadURL = Resources.getResource("payload.xml");
++        //Set<User> users = parseByJaxb(projectName, payloadURL);
++        Set<User> users = parseByStax(projectName, payloadURL);
++        String output = outHtml(users, projectName, Paths.get("out/usersJaxb.html"));
++        System.out.println(output);
++
++        String html = processByXslt(projectName, payloadURL);
++    }
++
++    private static String processByXslt(String projectName, URL payloadURL) throws IOException, TransformerException {
++        TransformerFactory transformerFactory = TransformerFactory.newInstance();
++        URL xsltURL = Resources.getResource("users.xslt");
++        Source xsltSource = new StreamSource(new FileReader(xsltURL.getFile()));
++        Transformer xsltTransformer = transformerFactory.newTransformer(xsltSource);
++        xsltTransformer.setParameter("projectName", projectName);
++        xsltTransformer.transform(new StreamSource(new FileReader(payloadURL.getFile())),
++                new StreamResult(new FileWriter("out/usersXslt.html")));
++        return "";
++    }
++
++    private static Set<User> parseByJaxb(String projectName, URL payloadURL) throws IOException, JAXBException {
++        JaxbParser JAXB_PARSER = new JaxbParser(ObjectFactory.class);
++        JAXB_PARSER.setSchema(Schemas.ofClasspath("payload.xsd"));
++
++        try (InputStream is = payloadURL.openStream()) {
++            Payload payload = JAXB_PARSER.unmarshal(is);
++            Project project = payload.getProjects().getProject().stream()
++                    .filter(p -> p.getName().equals(projectName))
++                    .findAny()
++                    .orElseThrow(() -> new IllegalArgumentException("Invalid project name '" + projectName + "'"));
++
++            Set<Group> groups = project
++                    .getGroups()
++                    .getGroup()
++                    .stream()
++                    .collect(toSet());
++
++            return payload.getUsers().getUser()
++                    .stream()
++                    .filter((u) -> u.getGroupRefs().stream()
++                            .filter((g) -> groups.contains((Group) g))
++                            .findAny()
++                            .isPresent())
++                    .collect(Collectors.toCollection(() -> new TreeSet<>(USER_COMPARATOR)));
++        }
++    }
++
++    private static String outHtml(Set<User> users, String projectName, Path path) throws IOException {
++        String result = body().with(
++                h1(projectName),
++                table().
++                        with(
++
++                                users.stream().map(
++                                        u -> tr().with(
++                                                td(u.getValue()),
++                                                td(u.getEmail())
++
++                                        )
++                                ).collect(Collectors.toList())
++
++                        )
++        ).render();
++        try (FileWriter fileWriter = new FileWriter(path.toFile())) {
++            fileWriter.write(result);
++        }
++
++        return result;
++    }
++
++    private static Set<User> parseByStax(String projectName, URL payloadURL) throws IOException, XMLStreamException {
++        Set<User> result = new TreeSet<>(USER_COMPARATOR);
++
++        try (StaxStreamProcessor processor = new StaxStreamProcessor(payloadURL.openStream())) {
++            XMLStreamReader reader = processor.getReader();
++            String currentProject = "";
++            List<String> groups = new ArrayList<>();
++            while (reader.hasNext()) {
++                int event = reader.next();
++                if (event == XMLEvent.START_ELEMENT) {
++                    if ("Project".equals(reader.getLocalName())) {
++                        for (int i = 0; i < reader.getAttributeCount(); i++) {
++                            if ("name".equals(reader.getAttributeLocalName(i))) {
++                                currentProject = reader.getAttributeValue(i);
++                            }
++                        }
++                    }
++
++                    if ("Group".equals(reader.getLocalName())) {
++                        if (currentProject.equals(projectName)) {
++                            for (int i = 0; i < reader.getAttributeCount(); i++) {
++                                if ("name".equals(reader.getAttributeLocalName(i))) {
++                                    groups.add(reader.getAttributeValue(i));
++                                }
++                            }
++                        }
++                    }
++
++                    if ("User".equals(reader.getLocalName())) {
++                        String email = "";
++                        String groupRefs = "";
++                        String userName = "";
++                        for (int i = 0; i < reader.getAttributeCount(); i++) {
++                            if ("groupRefs".equals(reader.getAttributeLocalName(i))) {
++                                groupRefs = reader.getAttributeValue(i);
++                            }
++
++                            if ("email".equals(reader.getAttributeLocalName(i))) {
++                                email = reader.getAttributeValue(i);
++                            }
++                        }
++                        userName = reader.getElementText();
++
++                        if (!groupRefs.isEmpty()) {
++                            String[] groupNames = groupRefs.split(" ");
++                            for (String groupName : groupNames) {
++                                if (groups.contains(groupName)) {
++                                    User user = new User();
++                                    user.setEmail(email);
++                                    user.setValue(userName);
++                                    result.add(user);
++                                }
++                            }
++                        }
++                    }
++
++                }
++            }
++        }
++        return result;
++
++    }
++
++}
