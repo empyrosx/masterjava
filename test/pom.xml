@@ -11,21 +11,31 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>export</artifactId>
+    <artifactId>test</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>war</packaging>
-    <name>Export</name>
+    <packaging>jar</packaging>
+    <name>Test</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
-            <groupId>ru.javaops</groupId>
-            <artifactId>common</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>com.j2html</groupId>
-            <artifactId>j2html</artifactId>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
             <version>RELEASE</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
