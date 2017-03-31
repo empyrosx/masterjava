@@ -14,6 +14,12 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Logging -->
+        <logback.version>1.2.2</logback.version>
+        <slf4j.version>1.7.25</slf4j.version>
+
+        <masterjava.config>/apps/masterjava/config/</masterjava.config>
+        <dependency.locations.enabled>false</dependency.locations.enabled>
     </properties>
 
     <build>
@@ -36,7 +42,37 @@
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence/>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
+        <testResources>
+            <testResource>
+                <directory>${masterjava.config}</directory>
+                <includes>
+                    <include>logback-test.xml</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
     </build>
 
     <dependencies>
@@ -48,7 +84,21 @@
         <dependency>
             <groupId>one.util</groupId>
             <artifactId>streamex</artifactId>
-            <version>RELEASE</version>
+            <version>0.6.2</version>
+        </dependency>
+
+        <!-- Logging with SLF4J & LogBack -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
 
         <!--Test-->
