@@ -32,6 +32,7 @@
     </appender>
 
     <logger name="ru.javaops.masterjava" level="info"/>
+    <logger name="org.skife.jdbi.v2" level="trace"/>
 
     <root level="warn">
         <appender-ref ref="file"/>

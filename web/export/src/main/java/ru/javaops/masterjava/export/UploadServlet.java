@@ -1,6 +1,8 @@
 package ru.javaops.masterjava.export;
 
 import org.thymeleaf.context.WebContext;
+import ru.javaops.masterjava.persist.DBIProvider;
+import ru.javaops.masterjava.persist.dao.UserDao;
 import ru.javaops.masterjava.persist.model.User;
 
 import javax.servlet.ServletException;
@@ -37,6 +39,9 @@ public class UploadServlet extends HttpServlet {
             Part filePart = req.getPart("fileToUpload");
             try (InputStream is = filePart.getInputStream()) {
                 List<User> users = userExport.process(is);
+                int chunkSize = Integer.parseInt(req.getParameter("chunkSize"));
+                saveUsers(users, chunkSize);
+
                 webContext.setVariable("users", users);
                 engine.process("result", webContext, resp.getWriter());
             }
@@ -44,5 +49,13 @@ public class UploadServlet extends HttpServlet {
             webContext.setVariable("exception", e);
             engine.process("exception", webContext, resp.getWriter());
         }
+    }
+
+    private void saveUsers(List<User> users, int chunkSize) {
+        UserDao dao = DBIProvider.getDao(UserDao.class);
+        DBIProvider.getDBI().useTransaction((conn, status) -> {
+            dao.batchInsert(users, chunkSize);
+        });
+
     }
 }
