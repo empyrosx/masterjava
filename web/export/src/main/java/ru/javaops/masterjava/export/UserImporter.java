@@ -1,19 +1,20 @@
 package ru.javaops.masterjava.export;
 
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
+import ru.javaops.masterjava.export.PayloadImporter.FailedEmail;
 import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.dao.UserDao;
+import ru.javaops.masterjava.persist.model.City;
 import ru.javaops.masterjava.persist.model.User;
 import ru.javaops.masterjava.persist.model.UserFlag;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,24 +25,13 @@ import java.util.concurrent.Future;
  * 14.10.2016
  */
 @Slf4j
-public class UserExport {
+public class UserImporter {
 
     private static final int NUMBER_THREADS = 4;
     private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_THREADS);
     private final UserDao userDao = DBIProvider.getDao(UserDao.class);
 
-    @Value
-    public static class FailedEmail {
-        public String emailOrRange;
-        public String reason;
-
-        @Override
-        public String toString() {
-            return emailOrRange + " : " + reason;
-        }
-    }
-
-    public List<FailedEmail> process(final InputStream is, int chunkSize) throws XMLStreamException {
+    public List<FailedEmail> process(StaxStreamProcessor processor, Map<String, City> cities, int chunkSize) throws XMLStreamException {
         log.info("Start proseccing with chunkSize=" + chunkSize);
 
         return new Callable<List<FailedEmail>>() {
@@ -64,18 +54,24 @@ public class UserExport {
 
                 int id = userDao.getSeqAndSkip(chunkSize);
                 List<User> chunk = new ArrayList<>(chunkSize);
-                final StaxStreamProcessor processor = new StaxStreamProcessor(is);
+                List<FailedEmail> failed = new ArrayList<>();
 
                 while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
                     final String email = processor.getAttribute("email");
-                    final UserFlag flag = UserFlag.valueOf(processor.getAttribute("flag"));
-                    final String fullName = processor.getReader().getElementText();
-                    final User user = new User(id++, fullName, email, flag);
-                    chunk.add(user);
-                    if (chunk.size() == chunkSize) {
-                        futures.add(submit(chunk));
-                        chunk = new ArrayList<>(chunkSize);
-                        id = userDao.getSeqAndSkip(chunkSize);
+                    String cityRef = processor.getAttribute("city");
+                    City city = cities.get(cityRef);
+                    if (city == null) {
+                        failed.add(new FailedEmail(email, "City '" + cityRef + "' is not present in DB"));
+                    } else {
+                        final UserFlag flag = UserFlag.valueOf(processor.getAttribute("flag"));
+                        final String fullName = processor.getReader().getElementText();
+                        final User user = new User(id++, fullName, email, flag, city.getId());
+                        chunk.add(user);
+                        if (chunk.size() == chunkSize) {
+                            futures.add(submit(chunk));
+                            chunk = new ArrayList<>(chunkSize);
+                            id = userDao.getSeqAndSkip(chunkSize);
+                        }
                     }
                 }
 
@@ -83,7 +79,6 @@ public class UserExport {
                     futures.add(submit(chunk));
                 }
 
-                List<FailedEmail> failed = new ArrayList<>();
                 futures.forEach(cf -> {
                     try {
                         failed.addAll(StreamEx.of(cf.future.get()).map(email -> new FailedEmail(email, "already present")).toList());
